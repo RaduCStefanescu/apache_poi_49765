@@ -10,15 +10,18 @@ public class Runner {
 
     private static final String INPUT_DOCUMENT = "input.docx";
     private static final String IMAGE_FILE = "signature.jpg";
-    private static final String OUTPUT_DOCUMENT = "output.docx";
+    private static final String OUTPUT_DOCUMENT = "outputNoFix.docx";
+    private static final String OUTPUT_DOCUMENT_FIX = "outputWithFix.docx";
 
     public static void main(String[] args) throws Exception{
         Path inputPath = Paths.get(Paths.get(ClassLoader.getSystemResource(INPUT_DOCUMENT).toURI()).toString());
         Path imagePath = Paths.get(Paths.get(ClassLoader.getSystemResource(IMAGE_FILE).toURI()).toString());
         Path outputPath = Paths.get(Paths.get(ClassLoader.getSystemResource(OUTPUT_DOCUMENT).toURI()).toString());
+        Path outputPathFix = Paths.get(Paths.get(ClassLoader.getSystemResource(OUTPUT_DOCUMENT_FIX).toURI()).toString());
 
         //load the input document
         Optional<XWPFDocument> document = DocxHandler.load(inputPath);
+        Optional<XWPFDocument> documentFix = DocxHandler.load(inputPath);
         Optional<XWPFPicture> picture = Optional.empty();
 
         if(document.isPresent()){
@@ -40,10 +43,20 @@ public class Runner {
                 //write the document containing the picture to the output file
                 DocxHandler.write(outputPath, document.get());
             }catch(Exception exception){
-                System.out.println("Unable to write output document!");
+                System.out.println("Unable to write output document without fix!");
+                exception.printStackTrace();
+            }
+
+            //generating the output for the method containing the fix
+            DocxHandler.addPictureWithFix(documentFix.get(), imagePath);
+
+            try {
+                //write the document containing the picture to the output file
+                DocxHandler.write(outputPathFix, documentFix.get());
+            }catch(Exception exception){
+                System.out.println("Unable to write output document with fix!");
                 exception.printStackTrace();
             }
         }
-
     }
 }
